@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        input {
+            width: 70%;
+            padding: 5px;
+        }
+        button {
+            padding: 5px;
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #eee;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+        }
+        .completed {
+            text-decoration: line-through;
+            color: grey;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>To-Do List</h2>
+        <input type="text" id="task" placeholder="Add a new task">
+        <input type="datetime-local" id="taskDateTime">
+        <button onclick="addTask()">Add</button>
+        <ul id="taskList"></ul>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTasks();
+        });
+
+        function addTask(event) {
+            event.preventDefault(); // Prevent any default button behavior
+            let taskInput = document.getElementById("task");
+            let dateTimeInput = document.getElementById("taskDateTime");
+            let taskValue = taskInput.value.trim();
+            let dateTimeValue = dateTimeInput.value;
+            if (taskValue === "" || dateTimeValue === "") return;
+
+            let task = {
+                id: Date.now(),
+                text: taskValue,
+                dateTime: dateTimeValue,
+                completed: false
+            };
+
+            let tasks = getTasks();
+            tasks.push(task);
+            saveTasks(tasks);
+            renderTasks();
+            taskInput.value = "";
+            dateTimeInput.value = "";
+            taskInput.focus(); // Focus back on the task input field after adding a task
+        }
+
+        function toggleComplete(id) {
+            let tasks = getTasks();
+            tasks.forEach(task => {
+                if (task.id == id) {
+                    task.completed = !task.completed;
+                }
+            });
+            saveTasks(tasks);
+            renderTasks();
+        }
+
+        function removeTask(id) {
+            let tasks = getTasks().filter(task => task.id != id);
+            saveTasks(tasks);
+            renderTasks();
+        }
+
+        function getTasks() {
+            return JSON.parse(localStorage.getItem("tasks")) || [];
+        }
+
+        function saveTasks(tasks) {
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            let taskList = document.getElementById("taskList");
+            taskList.innerHTML = "";
+            let tasks = getTasks();
+            tasks.forEach(task => {
+                let li = document.createElement("li");
+                li.innerHTML = `<span onclick="toggleComplete(${task.id})" class="${task.completed ? 'completed' : ''}">${task.text} (Due: ${new Date(task.dateTime).toLocaleString()})</span> <button onclick="removeTask(${task.id})">X</button>`;
+                taskList.appendChild(li);
+            });
+        }
+
+        function loadTasks() {
+            renderTasks();
+        }
+    </script>
+</body>
+</html>
